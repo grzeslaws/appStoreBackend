@@ -43,8 +43,12 @@ def get_order(order_uuid):
     return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid, "timestamp": order.timastamp}), 200
 
 
-@app.route("/api/public/get_access_token")
-def get_access_token():
+@app.route("/api/public/get_access_token/<urder_uuid>")
+def get_access_token(urder_uuid):
+
+    order = Order.quer.filter_by(order_uuid=urder_uuid).first()
+    print("order.__dict__: ", order.__dict__)
+
     data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": 145227,
                                    "client_secret": "12f071174cb7eb79d4aac5bc2f07563f"})
     data = data.encode("ascii")
@@ -62,12 +66,13 @@ def send_order(access_token):
     at = json.loads(access_token)["access_token"]
 
     payload = {
-        "notifyUrl": "http://127.0.0.1:5000/notify",
+        "notifyUrl": "https://app-store-backend.herokuapp.com/notify",
         "customerIp": "127.0.0.1",
         "merchantPosId": "145227",
         "description": "RTV market",
         "currencyCode": "PLN",
         "totalAmount": "22000",
+        "extOrderId": "ft2a3beta6y1esm8dvy9ys",
         "buyer": {
             "email": "grzesiek.supel@example.com",
             "phone": "654111654",
@@ -105,6 +110,9 @@ def send_order(access_token):
 @app.route("/notify", methods=["POST"])
 def notify():
     if request.method == "POST":
-        order = request.json
+        order = request.json["order"]
         print("order: ", order)
         return jsonify({"status": order})
+
+
+# {'orderId': 'BZ81VJBQP5181024GUEST000P01', 'extOrderId': 'ft2a3beta6y1esm8dvy9ys', 'orderCreateDate': '2018-10-24T09:45:57.676+02:00', 'notifyUrl': 'https://app-store-backend.herokuapp.com/notify', 'customerIp': '127.0.0.1', 'merchantPosId': '145227', 'description': 'RTV market', 'currencyCode': 'PLN', 'totalAmount': '22000', 'buyer':{'customerId': 'guest', 'email': 'grzesiek.supel@example.com', 'phone': '654111654', 'firstName': 'Grzesiek', 'lastName': 'Supel', 'language': 'pl'}, 'payMethod': {'amount': '22000', 'type': 'PBL'}, 'status': 'COMPLETED', 'products': [{'name': 'Wireless Mousefor Laptop', 'unitPrice': '15000', 'quantity': '1'}, {'name': 'HDMI cable', 'unitPrice': '6000', 'quantity': '1'}]}
