@@ -16,6 +16,7 @@ def create_order():
     if request.method == "POST":
         order_items = request.json["orderItems"]
         order = Order(total_price=request.json["totalPrice"])
+        db.session.add(order)
 
         for oi in order_items:
             p = Product.query.filter_by(product_uuid=oi["product"]["productUuid"]).first()
@@ -40,7 +41,8 @@ def get_order(order_uuid):
         product["quantity"] = oi.quantity
         order_items.append(product)
 
-    return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid, "timestamp": order.timastamp}), 200
+    return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid,
+                    "timestamp": order.timastamp, "status": order.status, "totalPrice": order.total_price}), 200
 
 
 @app.route("/api/public/get_access_token/<order_uuid>")
@@ -86,37 +88,6 @@ def send_order(access_token, order_uuid):
     order_payload["buyer"]["language"] = "pl"
     order_payload["products"] = order_items
 
-    print("order_payload['products']:", order_payload["products"])
-
-    # payload = {
-    #     "notifyUrl": "https://app-store-backend.herokuapp.com/notify",
-    #     "customerIp": "127.0.0.1",
-    #     "merchantPosId": "145227",
-    #     "description": "RTV market",
-    #     "currencyCode": "PLN",
-    #     "totalAmount": "22000",
-    #     "extOrderId": "ft2a3beta6y1esm8dvy9y5",
-    #     "buyer": {
-    #         "email": "grzesiek.supel@example.com",
-    #         "phone": "654111654",
-    #         "firstName": "Grzesiek",
-    #         "lastName": "Supel",
-    #         "language": "pl"
-    #     },
-    #     "products": [
-    #         {
-    #             "name": "Wireless Mouse for Laptop",
-    #             "unitPrice": "15000",
-    #             "quantity": "1"
-    #         },
-    #         {
-    #             "name": "HDMI cable",
-    #             "unitPrice": "6000",
-    #             "quantity": "1"
-    #         }
-    #     ]
-    # }
-
     url = "https://secure.payu.com/api/v2_1/orders/"
     headers = {
         'Content-Type': "application/json",
@@ -133,9 +104,23 @@ def send_order(access_token, order_uuid):
 @app.route("/notify", methods=["POST"])
 def notify():
     if request.method == "POST":
-        order = request.json["order"]
-        print("order: ", order)
-        return jsonify({"status": order})
+        requestOrder = request.json["order"]
+
+        print("requestOrder: ", requestOrder)
+        print("requestOrder['status']: ", requestOrder["status"])
+
+        order = Order.query.filter_by(order_uuid=requestOrder["extOrderId"]).first()
+        order.status = requestOrder["status"]
+        order.order_pauy_uuid = requestOrder["orderId"]
+
+        db.session.add(order)
+        db.session.commit()
+
+        order_test = Order.query.filter_by(order_uuid=requestOrder["extOrderId"]).first()
+        print(order_test.__dict__)
+        print("order_test.__dict__['status']: ", order_test.__dict__["status"])
+
+        return jsonify({"status": requestOrder})
 
 
-# {'orderId': 'BZ81VJBQP5181024GUEST000P01', 'extOrderId': 'ft2a3beta6y1esm8dvy9ys', 'orderCreateDate': '2018-10-24T09:45:57.676+02:00', 'notifyUrl': 'https://app-store-backend.herokuapp.com/notify', 'customerIp': '127.0.0.1', 'merchantPosId': '145227', 'description': 'RTV market', 'currencyCode': 'PLN', 'totalAmount': '22000', 'buyer':{'customerId': 'guest', 'email': 'grzesiek.supel@example.com', 'phone': '654111654', 'firstName': 'Grzesiek', 'lastName': 'Supel', 'language': 'pl'}, 'payMethod': {'amount': '22000', 'type': 'PBL'}, 'status': 'COMPLETED', 'products': [{'name': 'Wireless Mousefor Laptop', 'unitPrice': '15000', 'quantity': '1'}, {'name': 'HDMI cable', 'unitPrice': '6000', 'quantity': '1'}]}
+# {'orderId': 'F683XDD4ZJ181024GUEST000P01', 'extOrderId': '8af6d4a2-c667-43c2-80e6-ad07d6fb9e9d', 'orderCreateDate': '2018-10-24T11:35:08.067+02:00', 'notifyUrl': 'https://app-store-backend.herokuapp.com/notify', 'customerIp': '127.0.0.1', 'merchantPosId': '145227', 'description': 'RTV market', 'currencyCode': 'PLN', 'totalAmount': '220', 'buyer': {'customerId': 'guest', 'email': 'grzesiek.supel@example.com', 'phone': '654111654', 'firstName': 'Grzesiek', 'lastName': 'Supel', 'language': 'pl'}, 'payMethod': {'amount': '220', 'type': 'PBL'}, 'status': 'COMPLETED', 'products': [{'name': 'Product 11', 'unitPrice': '110', 'quantity': '2'}]}
