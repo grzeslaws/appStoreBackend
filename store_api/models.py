@@ -51,6 +51,7 @@ class Customer(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_uuid = db.Column(db.String(100), unique=True, default=generate_uuid)
+    total_price = db.Column(db.Integer, nullable=False)
     customer_id = db.Column(db.Integer, db.ForeignKey(
         "customer.id"), nullable=True)
     timastamp = db.Column(db.Integer, nullable=False,

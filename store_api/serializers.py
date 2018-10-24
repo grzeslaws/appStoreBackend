@@ -37,3 +37,12 @@ def product_item_in_order(p):
     product_item["price"] = p.price
 
     return product_item
+
+
+def product_item_for_order_payu(p, q):
+    product_item = {}
+    product_item["name"] = p.name
+    product_item["unitPrice"] = p.price
+    product_item["quantity"] = q
+
+    return product_item
