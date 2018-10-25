@@ -50,7 +50,7 @@ def admin_init():
 
 
 def init_customer():
-    new_customer = Customer(name="Tom")
+    new_customer = Customer(first_name="Tom")
     db.session.add(new_customer)
     db.session.commit()
 
@@ -63,5 +63,5 @@ def index():
     collections_init()
     admin_init()
     product_init()
-    init_customer()
+    # init_customer()
     return jsonify({"message": "Home"})

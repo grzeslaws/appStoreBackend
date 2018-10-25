@@ -1,6 +1,6 @@
-from store_api import app, db
-from store_api.models import Order, Orderitem, Product
-from store_api.serializers import product_item_in_order, product_item_for_order_payu
+from store_api import app, db, generate_uuid
+from store_api.models import Order, Orderitem, Product, Customer
+from store_api.serializers import product_item_in_order, product_item_for_order_payu, customer_item
 from flask import jsonify, request
 import urllib.parse
 import urllib.request
@@ -14,18 +14,30 @@ import requests
 def create_order():
 
     if request.method == "POST":
-        order_items = request.json["orderItems"]
-        order = Order(total_price=request.json["totalPrice"])
-        db.session.add(order)
+        customerPayloads = request.json["customerPayloads"]
+        customer = Customer(
+            customer_uuid=generate_uuid(),
+            first_name=customerPayloads["firstName"],
+            last_name=customerPayloads["lastName"],
+            email=customerPayloads["email"],
+            street=customerPayloads["street"],
+            city=customerPayloads["city"],
+            zip_code=customerPayloads["zipCode"],
+            telephone=customerPayloads["telephone"]
+        )
 
-        for oi in order_items:
+        order = Order(total_price=request.json["totalPrice"], customer=customer)
+
+        for oi in request.json["orderItems"]:
             p = Product.query.filter_by(product_uuid=oi["product"]["productUuid"]).first()
             order_item = Orderitem(order=order, product=p, quantity=oi["quantity"])
             db.session.add(order_item)
 
+        db.session.add(order)
+        db.session.add(customer)
         db.session.commit()
 
-    return jsonify({"orderUuid": order.order_uuid}), 200
+    return jsonify({"orderUuid": order.order_uuid, "customer": customer_item(customer)}), 200
 
 
 @app.route("/api/public/get_order/<order_uuid>")
@@ -98,7 +110,6 @@ def send_order(access_token, order_uuid, request_host_url):
 
     response = requests.request("POST", url, data=json.dumps(order_payload), headers=headers, allow_redirects=False)
 
-    print(response.json()["redirectUri"])
     return jsonify({"linkToPayment": response.json()["redirectUri"]})
 
 
@@ -107,9 +118,6 @@ def notify():
     if request.method == "POST":
         requestOrder = request.json["order"]
 
-        print("requestOrder: ", requestOrder)
-        print("requestOrder['status']: ", requestOrder["status"])
-
         order = Order.query.filter_by(order_uuid=requestOrder["extOrderId"]).first()
         order.status = requestOrder["status"]
         order.order_pauy_uuid = requestOrder["orderId"]
@@ -117,11 +125,4 @@ def notify():
         db.session.add(order)
         db.session.commit()
 
-        order_test = Order.query.filter_by(order_uuid=requestOrder["extOrderId"]).first()
-        print(order_test.__dict__)
-        print("order_test.__dict__['status']: ", order_test.__dict__["status"])
-
         return jsonify({"status": requestOrder})
-
-
-# {'orderId': 'F683XDD4ZJ181024GUEST000P01', 'extOrderId': '8af6d4a2-c667-43c2-80e6-ad07d6fb9e9d', 'orderCreateDate': '2018-10-24T11:35:08.067+02:00', 'notifyUrl': 'https://app-store-backend.herokuapp.com/notify', 'customerIp': '127.0.0.1', 'merchantPosId': '145227', 'description': 'RTV market', 'currencyCode': 'PLN', 'totalAmount': '220', 'buyer': {'customerId': 'guest', 'email': 'grzesiek.supel@example.com', 'phone': '654111654', 'firstName': 'Grzesiek', 'lastName': 'Supel', 'language': 'pl'}, 'payMethod': {'amount': '220', 'type': 'PBL'}, 'status': 'COMPLETED', 'products': [{'name': 'Product 11', 'unitPrice': '110', 'quantity': '2'}]}

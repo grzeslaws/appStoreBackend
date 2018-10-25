@@ -44,7 +44,13 @@ class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_uuid = db.Column(
         db.String(100), unique=True, default=generate_uuid)
-    name = db.Column(db.String(50), nullable=True)
+    first_name = db.Column(db.String(50), nullable=True)
+    last_name = db.Column(db.String(50), nullable=True)
+    email = db.Column(db.String(50), nullable=True)
+    street = db.Column(db.String(50), nullable=True)
+    city = db.Column(db.String(50), nullable=True)
+    zip_code = db.Column(db.String(50), nullable=True)
+    telephone = db.Column(db.String(50), nullable=True)
     order = db.relationship("Order", backref="customer", lazy=True)
 
 

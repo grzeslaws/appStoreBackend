@@ -6,7 +6,7 @@
 * install all dependencies via pip `pip install -r requirements.txt`
 > app is served on gunicorn - a Python WSGI HTTP Server for UNIX
 * run app `heroku local web`
-* stop app `ctrl + z`
+* stop app `ctrl + c`
 * deactivate virtual environment `deactivate`
 
 Sometimes you need install following:
