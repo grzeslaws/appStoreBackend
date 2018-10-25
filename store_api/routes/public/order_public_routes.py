@@ -48,6 +48,7 @@ def get_order(order_uuid):
 @app.route("/api/public/get_access_token/<order_uuid>")
 def get_access_token(order_uuid):
 
+    request_host_url = request.host_url
     data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": 145227,
                                    "client_secret": "12f071174cb7eb79d4aac5bc2f07563f"})
     data = data.encode("ascii")
@@ -58,10 +59,10 @@ def get_access_token(order_uuid):
 
     with urllib.request.urlopen(req, cafile=certifi.where()) as response:
 
-        return send_order(response.read(), order_uuid)
+        return send_order(response.read(), order_uuid, request_host_url)
 
 
-def send_order(access_token, order_uuid):
+def send_order(access_token, order_uuid, request_host_url):
     at = json.loads(access_token)["access_token"]
 
     order = Order.query.filter_by(order_uuid=order_uuid).first()
@@ -74,7 +75,7 @@ def send_order(access_token, order_uuid):
         p = Product.query.filter_by(id=oi.product_id).first()
         order_items.append(product_item_for_order_payu(p, oi.quantity))
 
-    order_payload["notifyUrl"] = "https://app-store-backend.herokuapp.com/notify"
+    order_payload["notifyUrl"] = request_host_url + "notify"
     order_payload["customerIp"] = "127.0.0.1"
     order_payload["merchantPosId"] = "145227"
     order_payload["description"] = "RTV market"

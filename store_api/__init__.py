@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from store_api import settings
 import uuid
 
 
@@ -7,16 +8,8 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-STATIC_FOLDER = "/static"
-UPLOAD_FOLDER = "store_api" + STATIC_FOLDER + "/images"
-ALLOWED_EXTENSIONS = set(["txt", "pdf", "png", "jpg", "jpeg", "gif"])
-PYTHONHTTPSVERIFY = 0
-
-app = Flask(__name__, static_folder=STATIC_FOLDER)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-app.config["SECRET_KEY"] = "thissecretkey"
+app = Flask(__name__, static_folder=settings.STATIC_FOLDER)
+app.config.from_pyfile("config.cfg")
 
 db = SQLAlchemy(app)
 
