@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from store_api import settings
 import uuid
+import os
 
 
 def generate_uuid():
@@ -9,7 +10,10 @@ def generate_uuid():
 
 
 app = Flask(__name__, static_folder=settings.STATIC_FOLDER)
-app.config.from_pyfile("config.cfg")
+app.config["UPLOAD_FOLDER"] = settings.UPLOAD_FOLDER
+
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["SQLALCHEMY_DATABASE_URI"]
 
 db = SQLAlchemy(app)
 
