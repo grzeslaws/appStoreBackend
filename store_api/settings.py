@@ -18,4 +18,3 @@ PAYU_AUTHORIZE_ENDPOINT = "https://secure.payu.com/pl/standard/user/oauth/author
 PAYU_ORDERS_ENDPOINT = "https://secure.payu.com/api/v2_1/orders/"
 
 APP_NOTIFICATIONS_ENDPOINT = "notify"
-

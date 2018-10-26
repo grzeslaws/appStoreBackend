@@ -1,6 +1,6 @@
 from store_api import app, db
 from flask import jsonify
-from store_api.models import Product, Category, Admin, Collection, Customer
+from store_api.models import Product, Category, Admin, Collection, Customer, PaymentType, PostType
 from werkzeug.security import generate_password_hash
 
 
@@ -55,6 +55,24 @@ def init_customer():
     db.session.commit()
 
 
+def init_payment_type():
+    cash_on_delivery = PaymentType(name="cash_on_delivery", cost=5)
+    transfer = PaymentType(name="transfer", cost=5)
+
+    db.session.add(cash_on_delivery)
+    db.session.add(transfer)
+    db.session.commit()
+
+
+def init_post_type():
+    normal = PostType(name="normal", cost=15)
+    express = PostType(name="express", cost=0)
+
+    db.session.add(normal)
+    db.session.add(express)
+    db.session.commit()
+
+
 @app.route("/")
 def index():
     db.drop_all()
@@ -63,5 +81,7 @@ def index():
     collections_init()
     admin_init()
     product_init()
+    init_payment_type()
+    init_post_type()
     # init_customer()
     return jsonify({"message": "Home"})

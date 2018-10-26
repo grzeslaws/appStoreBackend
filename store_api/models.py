@@ -76,6 +76,18 @@ class Orderitem(db.Model):
         "product.id"), nullable=False)
 
 
+class PaymentType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    cost = db.Column(db.Integer, nullable=True)
+
+
+class PostType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    cost = db.Column(db.Integer, nullable=True)
+
+
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     admin_name = db.Column(db.String(100))

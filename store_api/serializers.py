@@ -56,3 +56,11 @@ def customer_item(c):
     customer["telephone"] = c.telephone
     customer["customer_uuid"] = c.customer_uuid
     return customer
+
+
+def payment_post_type_item(i):
+    type_item = {}
+    type_item["id"] = i.id
+    type_item["name"] = i.name
+    type_item["cost"] = i.cost
+    return type_item
