@@ -6,6 +6,7 @@ from store_api.models import Category
 @app.route("/api/public/get_categories")
 def get_categories():
     categories = Category.query.all()
+    print("categories: ", categories)
 
     categoriesList = []
     for c in categories:

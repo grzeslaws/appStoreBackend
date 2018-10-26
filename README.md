@@ -5,7 +5,7 @@
 * activate virtual environment `source venv/bin/activate`
 * install all dependencies via pip `pip install -r requirements.txt`
 > app is served on gunicorn - a Python WSGI HTTP Server for UNIX
-* run app `heroku local web`
+* run app `python run.py`
 * stop app `ctrl + c`
 * deactivate virtual environment `deactivate`
 

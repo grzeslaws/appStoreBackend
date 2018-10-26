@@ -1,4 +1,4 @@
-from store_api import app, db, generate_uuid
+from store_api import app, db, generate_uuid, settings
 from store_api.models import Order, Orderitem, Product, Customer
 from store_api.serializers import product_item_in_order, product_item_for_order_payu, customer_item
 from flask import jsonify, request
@@ -6,6 +6,7 @@ import urllib.parse
 import urllib.request
 import certifi
 import json
+import os
 
 import requests
 
@@ -61,13 +62,16 @@ def get_order(order_uuid):
 def get_access_token(order_uuid):
 
     request_host_url = request.host_url
-    data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": 145227,
-                                   "client_secret": "12f071174cb7eb79d4aac5bc2f07563f"})
+    data = urllib.parse.urlencode({
+        "grant_type": os.environ["CLIENT_CREDENTIALS"],
+        "client_id": os.environ["CLIENT_ID"],
+        "client_secret": os.environ["CLIENT_SECRET"]
+    })
     data = data.encode("ascii")
     headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded"
     }
-    req = urllib.request.Request('https://secure.payu.com/pl/standard/user/oauth/authorize', data, headers)
+    req = urllib.request.Request(settings.PAYU_AUTHORIZE_ENDPOINT, data, headers)
 
     with urllib.request.urlopen(req, cafile=certifi.where()) as response:
 
@@ -76,8 +80,9 @@ def get_access_token(order_uuid):
 
 def send_order(access_token, order_uuid, request_host_url):
     at = json.loads(access_token)["access_token"]
-
     order = Order.query.filter_by(order_uuid=order_uuid).first()
+
+    customer = order.customer.__dict__
 
     order_payload = {}
     order_payload["buyer"] = {}
@@ -87,28 +92,28 @@ def send_order(access_token, order_uuid, request_host_url):
         p = Product.query.filter_by(id=oi.product_id).first()
         order_items.append(product_item_for_order_payu(p, oi.quantity))
 
-    order_payload["notifyUrl"] = request_host_url + "notify"
-    order_payload["customerIp"] = "127.0.0.1"
-    order_payload["merchantPosId"] = "145227"
-    order_payload["description"] = "RTV market"
-    order_payload["currencyCode"] = "PLN"
+    order_payload["notifyUrl"] = request_host_url + settings.APP_NOTIFICATIONS_ENDPOINT
+    order_payload["customerIp"] = settings.PAYU_CUSTOMER_IP
+    order_payload["merchantPosId"] = settings.PAYU_MERCHANT_POS_ID
+    order_payload["description"] = settings.PAYU_DESCRIPTION
+    order_payload["currencyCode"] = settings.PAYU_CURRENCY_CODE
     order_payload["totalAmount"] = order.__dict__["total_price"]
     order_payload["extOrderId"] = order.__dict__["order_uuid"]
-    order_payload["buyer"]["email"] = "grzesiek.supel@example.com"
-    order_payload["buyer"]["phone"] = "654111654"
-    order_payload["buyer"]["firstName"] = "Grzesiek"
-    order_payload["buyer"]["lastName"] = "Supel"
-    order_payload["buyer"]["language"] = "pl"
+    order_payload["buyer"]["email"] = customer["email"]
+    order_payload["buyer"]["phone"] = customer["telephone"]
+    order_payload["buyer"]["firstName"] = customer["first_name"]
+    order_payload["buyer"]["lastName"] = customer["last_name"]
+    order_payload["buyer"]["language"] = settings.PAYU_BUYER_LANGUAGE
     order_payload["products"] = order_items
 
-    url = "https://secure.payu.com/api/v2_1/orders/"
     headers = {
-        'Content-Type': "application/json",
-        'Authorization': "Bearer " + at,
-        'Cache-Control': "no-cache"
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + at,
+        "Cache-Control": "no-cache"
     }
 
-    response = requests.request("POST", url, data=json.dumps(order_payload), headers=headers, allow_redirects=False)
+    response = requests.request("POST", settings.PAYU_ORDERS_ENDPOINT, data=json.dumps(order_payload),
+                                headers=headers, allow_redirects=False)
 
     return jsonify({"linkToPayment": response.json()["redirectUri"]})
 
