@@ -4,6 +4,7 @@
 * init virtual environment `virtualenv venv`
 * activate virtual environment `source venv/bin/activate`
 * install all dependencies via pip `pip install -r requirements.txt`
+* export variables from .env file `source .env`
 > app is served on gunicorn - a Python WSGI HTTP Server for UNIX
 * run app `python run.py`
 * stop app `ctrl + c`
