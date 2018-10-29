@@ -34,6 +34,7 @@ class Product(db.Model):
     name = db.Column(db.String(80), nullable=False)
     price = db.Column(db.Integer, nullable=False, default=0)
     quantity = db.Column(db.Integer, nullable=False, default=0)
+    description = db.Column(db.Text, nullable=True)
     image_path = db.Column(db.String(200), nullable=True, default="default.jpg")
     orderitem = db.relationship("Orderitem", backref="product", lazy=True)
     categories = db.relationship("Category", secondary=cat, backref=db.backref("products", lazy="dynamic"))

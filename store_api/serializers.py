@@ -21,6 +21,7 @@ def product_item(p):
     product_item["product_uuid"] = p.product_uuid
     product_item["price"] = p.price
     product_item["quantity"] = p.quantity
+    product_item["description"] = p.description
     product_item["categories"] = categoryList
     product_item["collections"] = collectionsList
     return product_item
