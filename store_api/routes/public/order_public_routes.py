@@ -92,7 +92,7 @@ def send_order(access_token, order_uuid, request_host_url):
         p = Product.query.filter_by(id=oi.product_id).first()
         order_items.append(product_item_for_order_payu(p, oi.quantity))
 
-    order_payload["notifyUrl"] = request_host_url + settings.APP_NOTIFICATIONS_ENDPOINT
+    order_payload["notifyUrl"] = request_host_url + settings.APP_NOTIFICATIONS_PATH
     order_payload["customerIp"] = settings.PAYU_CUSTOMER_IP
     order_payload["merchantPosId"] = settings.PAYU_MERCHANT_POS_ID
     order_payload["description"] = settings.PAYU_DESCRIPTION
