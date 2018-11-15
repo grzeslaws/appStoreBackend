@@ -16,7 +16,6 @@ def create_order():
 
     if request.method == "POST":
         customerPayloads = request.json["customerPayloads"]
-        print("request.json: ", request.json)
         customer = Customer(
             customer_uuid=generate_uuid(),
             first_name=customerPayloads["firstName"],
@@ -38,8 +37,6 @@ def create_order():
         db.session.add(order)
         db.session.add(customer)
         db.session.commit()
-
-        print("order.timastamp: ", order.timastamp)
 
     return jsonify({"orderUuid": order.order_uuid, "customer": customer_item(customer)}), 200
 
@@ -118,6 +115,9 @@ def send_order(access_token, order_uuid, request_host_url):
 @app.route("/notify", methods=["POST"])
 def notify():
     if request.method == "POST":
+        print("notify")
+        print("request.json: ", request.json["order"])
+
         requestOrder = request.json["order"]
 
         order = Order.query.filter_by(order_uuid=requestOrder["extOrderId"]).first()
