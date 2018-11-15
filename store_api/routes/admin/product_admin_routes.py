@@ -87,6 +87,10 @@ def edit_product(product_uuid):
         p.name = request.json["name"]
         if "description" in request.json:
             p.description = request.json["description"]
+        if request.json["price"] is not 0:
+            p.price = request.json["price"]
+        if request.json["quantity"] is not 0:
+            p.quantity = request.json["quantity"]
         if request.json["categoryId"] is not 0:
             cat = Category.query.filter_by(id=request.json["categoryId"]).first()
             cat.products.append(p)

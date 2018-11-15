@@ -35,6 +35,7 @@ def product_item_in_order(p):
     product_item["image_path"] = p.image_path
     product_item["product_uuid"] = p.product_uuid
     product_item["price"] = p.price
+    product_item["description"] = p.description
     return product_item
 
 
@@ -65,3 +66,16 @@ def payment_post_type_item(i):
     type_item["name"] = i.name
     type_item["cost"] = i.cost
     return type_item
+
+
+def get_orderitems(order, Product):
+    order_items = []
+
+    for oi in order.orderitems:
+        p = Product.query.filter_by(id=oi.product_id).first()
+        product = {}
+        product["product"] = product_item_in_order(p)
+        product["quantity"] = oi.quantity
+        order_items.append(product)
+
+    return order_items

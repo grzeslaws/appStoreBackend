@@ -3,22 +3,22 @@ from flask import request, jsonify
 from store_api.models import Customer, Product, Order, Category, Orderitem
 
 
-def init_order():
-    for i in range(0, 30):
+# def init_order():
+#     for i in range(0, 30):
 
-        c = Customer(name="Customer " + str(i))
-        o = Order(customer=c)
-        db.session.add(c)
-        db.session.add(o)
+#         c = Customer(name="Customer " + str(i))
+#         o = Order(customer=c)
+#         db.session.add(c)
+#         db.session.add(o)
 
-        p = Product(name="Pen " + str(i))
-        t = Category.query.filter_by(id=3).first()
-        t.products.append(p)
-        oi = Orderitem(order=o, product=p)
-        db.session.add(p)
-        db.session.add(oi)
+#         p = Product(name="Pen " + str(i))
+#         t = Category.query.filter_by(id=3).first()
+#         t.products.append(p)
+#         oi = Orderitem(order=o, product=p)
+#         db.session.add(p)
+#         db.session.add(oi)
 
-    db.session.commit()
+#     db.session.commit()
 
 
 @app.route("/api/order_details/<order_id>", methods=["GET"])
