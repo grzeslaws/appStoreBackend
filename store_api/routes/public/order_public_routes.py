@@ -1,6 +1,6 @@
 from store_api import app, db, generate_uuid, settings
 from store_api.models import Order, Orderitem, Product, Customer
-from store_api.serializers import product_item_in_order, product_item_for_order_payu, customer_item
+from store_api.serializers import product_item_for_order_payu, customer_item, get_orderitems
 from flask import jsonify, request
 import urllib.parse
 import urllib.request
@@ -16,6 +16,7 @@ def create_order():
 
     if request.method == "POST":
         customerPayloads = request.json["customerPayloads"]
+        print("request.json: ", request.json)
         customer = Customer(
             customer_uuid=generate_uuid(),
             first_name=customerPayloads["firstName"],
@@ -38,6 +39,8 @@ def create_order():
         db.session.add(customer)
         db.session.commit()
 
+        print("order.timastamp: ", order.timastamp)
+
     return jsonify({"orderUuid": order.order_uuid, "customer": customer_item(customer)}), 200
 
 
@@ -45,17 +48,11 @@ def create_order():
 def get_order(order_uuid):
     order = Order.query.filter_by(order_uuid=order_uuid).first()
 
-    order_items = []
-
-    for oi in order.orderitems:
-        p = Product.query.filter_by(id=oi.product_id).first()
-        product = {}
-        product["product"] = product_item_in_order(p)
-        product["quantity"] = oi.quantity
-        order_items.append(product)
+    order_items = get_orderitems(order, Product)
 
     return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid,
-                    "timestamp": order.timastamp, "status": order.status, "totalPrice": order.total_price}), 200
+                    "timestamp": order.timastamp, "status": order.status,
+                    "totalPrice": order.total_price, "customer": customer_item(order.customer)}), 200
 
 
 @app.route("/api/public/get_access_token/<order_uuid>")
