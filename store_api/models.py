@@ -1,6 +1,5 @@
 from store_api import db, generate_uuid
 import time
-from enum import Enum
 from sqlalchemy import desc
 
 

@@ -3,7 +3,7 @@ PORT = 5000
 
 STATIC_FOLDER = "/static"
 UPLOAD_FOLDER = "store_api" + STATIC_FOLDER + "/images"
-ALLOWED_EXTENSIONS = set(["txt", "pdf", "png", "jpg", "jpeg", "gif"])
+ALLOWED_EXTENSIONS = (".png", ".jpg")
 PYTHONHTTPSVERIFY = 0
 
 # payu setting
@@ -18,3 +18,6 @@ PAYU_AUTHORIZE_ENDPOINT = "https://secure.payu.com/pl/standard/user/oauth/author
 PAYU_ORDERS_ENDPOINT = "https://secure.payu.com/api/v2_1/orders/"
 
 APP_NOTIFICATIONS_PATH = "notify"
+
+# images sizes
+IMAGE_SIZES = {"small": (120, 120), "medium": (300, 300), "big": (600, 600)}

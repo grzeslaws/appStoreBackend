@@ -1,15 +1,16 @@
 from werkzeug.utils import secure_filename
-from store_api import app, db, generate_uuid
+from store_api import app, db
 from flask import request, jsonify
 from store_api.models import Product, Category, Collection
 from store_api.serializers import product_item
 from sqlalchemy import desc
 from store_api.routes import token_required
-import time
+from store_api.utils import image_folder_path, image_path_with_options
+from store_api import settings
+import shutil
 import os
-
-imagePath = None
-productUuid = None
+from PIL import Image
+from io import BytesIO
 
 
 def categories_init():
@@ -20,43 +21,12 @@ def categories_init():
     db.session.commit()
 
 
-def save_image():
-
-    if request.files:
-        global productUuid
-        global imagePath
-        productUuid = generate_uuid()
-        file = request.files["file"]
-        file_name = secure_filename(file.filename)
-        imagePath = productUuid + "_" + file_name
-        file.save(os.path.join(
-            app.config["UPLOAD_FOLDER"], imagePath))
-
-
-def product_describe():
-
-    if request.json:
-        global productUuid
-        global imagePath
-        p = Product(name=request.json["name"], product_uuid=productUuid, image_path=imagePath)
-        db.session.add(p)
-        db.session.commit()
-
-        productUuid = generate_uuid()
-        imagePath = None
-
-
-def add_product():
-    save_image()
-    time.sleep(0.1)
-    product_describe()
-
-
-@app.route("/api/admin/add_product_image", methods=["POST"])
 @app.route("/api/admin/products", methods=["POST"])
 def add_product_route():
     if request.method == "POST":
-        add_product()
+        p = Product(name=request.json["name"])
+        db.session.add(p)
+        db.session.commit()
 
         return jsonify({"message": "Product has been added!"}), 201
 
@@ -79,7 +49,7 @@ def get_all_products(current_user, page_number, per_page):
                         "pages": products.pages})
 
 
-@app.route("/api/admin/edit_product/<product_uuid>", methods=["POST", "PUT", "GET"])
+@app.route("/api/admin/edit_product/<product_uuid>", methods=["PUT", "GET"])
 def edit_product(product_uuid):
 
     if request.method == "PUT":
@@ -112,6 +82,7 @@ def delete_product(product_uuid):
         p = Product.query.filter_by(product_uuid=product_uuid).first()
         db.session.delete(p)
         db.session.commit()
+        shutil.rmtree(image_folder_path(product_uuid))
 
         return jsonify({"message": "Product has been deleted!"})
 
@@ -120,14 +91,30 @@ def delete_product(product_uuid):
 def edit_product_image(product_uuid):
     if request.method == "POST":
         if request.files:
+
             file = request.files["file"]
             file_name = secure_filename(file.filename)
-            imagePath = product_uuid + "_" + file_name
-            file.save(os.path.join(
-                app.config["UPLOAD_FOLDER"], imagePath))
+            product_image_folder = image_folder_path(product_uuid)
+            allowed_extensions = file_name.lower().endswith(settings.ALLOWED_EXTENSIONS)
 
-            p = Product.query.filter_by(product_uuid=product_uuid).first()
-            p.image_path = imagePath
-            db.session.commit()
-        return jsonify({"message": "Image has been changed!"})
-    return jsonify({"message": "Image has been changed!"})
+            if allowed_extensions:
+                if os.path.exists(product_image_folder):
+                    shutil.rmtree(product_image_folder)
+
+                os.makedirs(product_image_folder)
+
+                f = Image.open(BytesIO(file.read()), mode="r")
+                for key, size in settings.IMAGE_SIZES.items():
+                    f_name, ext = os.path.splitext(file_name)
+                    temp_img = f.copy()
+                    temp_img.thumbnail(size)
+                    temp_img.save(os.path.join(product_image_folder, image_path_with_options(file_name, key)))
+
+                p = Product.query.filter_by(product_uuid=product_uuid).first()
+                p.image_path = file_name
+                db.session.commit()
+                return jsonify({"message": "Image has been changed!"}), 201
+            else:
+                return jsonify({"message": "Not allowed extension!"}), 400
+        else:
+            return jsonify({"message": "There is no file!"}), 400
