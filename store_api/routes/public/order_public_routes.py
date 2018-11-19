@@ -48,7 +48,7 @@ def get_order(order_uuid):
     order_items = get_orderitems(order, Product)
 
     return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid,
-                    "timestamp": order.timastamp, "status": order.status,
+                    "timestamp": order.timestamp, "status": order.status,
                     "totalPrice": order.total_price, "customer": customer_item(order.customer)}), 200
 
 
@@ -115,8 +115,6 @@ def send_order(access_token, order_uuid, request_host_url):
 @app.route("/notify", methods=["POST"])
 def notify():
     if request.method == "POST":
-        print("notify")
-        print("request.json: ", request.json["order"])
 
         requestOrder = request.json["order"]
 
