@@ -3,13 +3,18 @@ from flask import request, jsonify, send_from_directory
 from store_api.models import Product, Category, Collection
 from store_api.serializers import product_item
 from sqlalchemy import desc
+from store_api.utils import image_folder_path, image_path_with_options
 import os
 
 
-@app.route("/api/public/get_image/<path:filename>")
-def download_file(filename):
-    return send_from_directory(os.path.abspath(app.config["UPLOAD_FOLDER"]),
-                               filename, as_attachment=False)
+@app.route("/api/public/get_image/<path:filename>/<product_uuid>/<image_size>")
+def download_file(filename, product_uuid, image_size):
+    if not os.path.exists(image_folder_path(product_uuid)):
+        return send_from_directory(os.path.abspath(app.config["UPLOAD_FOLDER"]),
+                                   filename, as_attachment=False)
+    else:
+        return send_from_directory(os.path.abspath(image_folder_path(product_uuid)),
+                                   image_path_with_options(filename, image_size), as_attachment=False)
 
 
 @app.route("/api/public/get_all_products/<int:category_id>/<int:page_number>/<int:per_page>")
