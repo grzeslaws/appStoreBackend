@@ -1,5 +1,7 @@
 from store_api import db, generate_uuid
 import time
+from enum import Enum
+from sqlalchemy import desc
 
 
 cat = db.Table("categories",
@@ -56,6 +58,8 @@ class Customer(db.Model):
 
 
 class Order(db.Model):
+    page = 1
+    per_page = 10
     id = db.Column(db.Integer, primary_key=True)
     order_uuid = db.Column(db.String(100), unique=True, default=generate_uuid)
     order_pauy_uuid = db.Column(db.String(100), unique=True, nullable=True)
@@ -63,9 +67,21 @@ class Order(db.Model):
     status = db.Column(db.String(20), nullable=True)
     customer_id = db.Column(db.Integer, db.ForeignKey(
         "customer.id"), nullable=True)
-    timastamp = db.Column(db.Integer, nullable=False,
+    timestamp = db.Column(db.Integer, nullable=False,
                           default=int(time.time()))
     orderitems = db.relationship("Orderitem", backref="order", lazy=True)
+
+    @classmethod
+    def order_by_timestamp(self, page, per_page):
+        return self.query.order_by(desc(self.timestamp)).paginate(page=page, per_page=self.per_page)
+
+    @classmethod
+    def order_by_status(self, page, per_page):
+        return self.query.order_by(desc(self.status)).paginate(page=page, per_page=self.per_page)
+
+    @classmethod
+    def order_by_total_price(self, page, per_page):
+        return self.query.order_by(desc(self.total_price)).paginate(page=page, per_page=self.per_page)
 
 
 class Orderitem(db.Model):
