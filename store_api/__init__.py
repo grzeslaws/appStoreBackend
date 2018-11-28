@@ -32,3 +32,4 @@ from store_api.routes.admin import categories_admin_routes  # noqa: E402, F401
 from store_api.routes.admin import collections_admin_routes  # noqa: E402, F401
 from store_api.routes.admin import payment_post_admin_routes  # noqa: E402, F401
 from store_api.routes.admin import orders_admin_routes  # noqa: E402, F401
+from store_api.routes.admin import post_status_admin_routes  # noqa: E402, F401
