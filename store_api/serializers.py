@@ -1,3 +1,5 @@
+from store_api.models import ColorPostStatus
+
 def product_item(p):
 
     categoryList = []
@@ -79,3 +81,11 @@ def get_orderitems(order, Product):
         order_items.append(product)
 
     return order_items
+
+
+def get_ps(ps):
+    post_status = {}
+    post_status["id"] = ps.id
+    post_status["name"] = ps.name
+    post_status["color"] = ColorPostStatus(ps.color).name
+    return post_status

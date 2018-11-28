@@ -1,6 +1,7 @@
 from store_api import db, generate_uuid
 import time
 from sqlalchemy import desc
+from enum import Enum
 
 
 cat = db.Table("categories",
@@ -102,6 +103,19 @@ class PostType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     cost = db.Column(db.Integer, nullable=True)
+
+
+class ColorPostStatus(Enum):
+    RED = "red"
+    BLUE = "blue"
+    GREEN = "green"
+    GRAY = "gray"
+
+
+class PostStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    color = db.Column(db.Enum(ColorPostStatus))
 
 
 class Admin(db.Model):

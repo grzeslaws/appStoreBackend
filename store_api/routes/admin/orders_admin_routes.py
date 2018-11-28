@@ -13,7 +13,7 @@ def get_orders(page, order_by):
     orders_data = {}
     orders = []
 
-    if order_by and order_by == "Date":
+    if order_by and order_by == "Timestamp":
         orders_data = Order.order_by_timestamp(page, 10)
     elif order_by and order_by == "Status":
         orders_data = Order.order_by_status(page, 10)
