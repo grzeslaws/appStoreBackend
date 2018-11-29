@@ -61,22 +61,3 @@ def search_orders(query, page_number):
             orders_result.append(order_dict)
 
         return jsonify({"orders": orders_result})
-
-
-# @app.route("/api/admin/get_order/<order_uuid>")
-# def get_order(order_uuid):
-#     order_data = Order.query.all()
-
-#     orders = []
-
-#     for order in orders_data:
-#         order_dict = {}
-#         order_dict["orderItems"] = get_orderitems(order, Product)
-#         order_dict["orderUuid"] = order.order_uuid
-#         order_dict["timestamp"] = order.timestamp
-#         order_dict["status"] = order.status
-#         order_dict["totalPrice"] = order.total_price
-#         order_dict["customer"] = customer_item(order.customer)
-#         orders.append(order_dict)
-
-#     return jsonify({"orders": orders})
