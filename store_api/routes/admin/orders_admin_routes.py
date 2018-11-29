@@ -1,13 +1,11 @@
 from store_api import app
 from store_api.models import Order, Product
 from flask import jsonify
-from store_api.serializers import get_orderitems, customer_item
+from store_api.serializers import get_orderitems, customer_item, get_ps
 
 
 @app.route("/api/admin/get_orders/<int:page>/<order_by>")
 def get_orders(page, order_by="Timestamp"):
-
-    print(order_by)
 
     orders_data = {}
     orders = []
@@ -29,6 +27,7 @@ def get_orders(page, order_by="Timestamp"):
         order_dict["status"] = order.status
         order_dict["totalPrice"] = order.total_price
         order_dict["customer"] = customer_item(order.customer)
+        order_dict["post_status"] = get_ps(order.post_status) if order.post_status_id is not None else None
         orders.append(order_dict)
 
     return jsonify({"orders": orders,

@@ -1,6 +1,6 @@
 from store_api import app, db, generate_uuid, settings
 from store_api.models import Order, Orderitem, Product, Customer
-from store_api.serializers import product_item_for_order_payu, customer_item, get_orderitems
+from store_api.serializers import product_item_for_order_payu, customer_item, get_orderitems, get_ps
 from flask import jsonify, request
 import urllib.parse
 import urllib.request
@@ -47,9 +47,15 @@ def get_order(order_uuid):
 
     order_items = get_orderitems(order, Product)
 
-    return jsonify({"orderItems": order_items, "orderUuid": order.order_uuid,
-                    "timestamp": order.timestamp, "status": order.status,
-                    "totalPrice": order.total_price, "customer": customer_item(order.customer)}), 200
+    return jsonify({
+        "orderItems": order_items,
+        "orderUuid": order.order_uuid,
+        "timestamp": order.timestamp,
+        "status": order.status,
+        "totalPrice": order.total_price,
+        "customer": customer_item(order.customer),
+        "post_status": get_ps(order.post_status) if order.post_status_id is not None else None
+    }), 200
 
 
 @app.route("/api/public/get_access_token/<order_uuid>")
