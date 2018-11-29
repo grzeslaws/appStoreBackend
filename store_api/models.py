@@ -67,6 +67,8 @@ class Order(db.Model):
     status = db.Column(db.String(20), nullable=True)
     customer_id = db.Column(db.Integer, db.ForeignKey(
         "customer.id"), nullable=True)
+    post_status_id = db.Column(db.Integer, db.ForeignKey(
+        "post_status.id"), nullable=True)
     timestamp = db.Column(db.Integer, nullable=False,
                           default=int(time.time()))
     orderitems = db.relationship("Orderitem", backref="order", lazy=True)
@@ -116,6 +118,7 @@ class PostStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     color = db.Column(db.Enum(ColorPostStatus))
+    order = db.relationship("Order", backref="post_status", lazy=True)
 
 
 class Admin(db.Model):
