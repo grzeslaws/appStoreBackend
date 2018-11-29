@@ -1,12 +1,11 @@
 from store_api import app
 from store_api.models import Order, Product
 from flask import jsonify
-# from sqlalchemy import desc
 from store_api.serializers import get_orderitems, customer_item
 
 
 @app.route("/api/admin/get_orders/<int:page>/<order_by>")
-def get_orders(page, order_by):
+def get_orders(page, order_by="Timestamp"):
 
     print(order_by)
 
