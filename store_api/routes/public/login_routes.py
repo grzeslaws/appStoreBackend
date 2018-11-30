@@ -10,13 +10,16 @@ import datetime
 def login():
     if request.method == "POST":
         a = Admin.query.filter_by(admin_name=request.json["name"]).first()
-        if check_password_hash(a.password, request.json["password"]):
-            data = {
-                "id": a.id,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=280)
-            }
-            token = jwt.encode(
-                data, app.config["SECRET_KEY"], "HS256").decode("utf-8")
-            return jsonify({"token": token}), 200
+        if a is not None:
+            if check_password_hash(a.password, request.json["password"]):
+                data = {
+                    "id": a.id,
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=280)
+                }
+                token = jwt.encode(
+                    data, app.config["SECRET_KEY"], "HS256").decode("utf-8")
+                return jsonify({"token": token}), 200
+            else:
+                return jsonify({"message": "Incorrect password!"}), 401
         else:
-            return None, 401
+            return jsonify({"message": "Administrator is not exist!"}), 401
