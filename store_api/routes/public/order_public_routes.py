@@ -30,8 +30,10 @@ def create_order():
         order = Order(total_price=request.json["totalPrice"], customer=customer)
 
         for oi in request.json["orderItems"]:
+            quantity = oi["quantity"]
             p = Product.query.filter_by(product_uuid=oi["product"]["productUuid"]).first()
-            order_item = Orderitem(order=order, product=p, quantity=oi["quantity"])
+            p.quantity = p.quantity - quantity
+            order_item = Orderitem(order=order, product=p, quantity=quantity)
             db.session.add(order_item)
 
         db.session.add(order)
@@ -44,18 +46,20 @@ def create_order():
 @app.route("/api/public/get_order/<order_uuid>")
 def get_order(order_uuid):
     order = Order.query.filter_by(order_uuid=order_uuid).first()
+    if order:
+        order_items = get_orderitems(order, Product)
 
-    order_items = get_orderitems(order, Product)
-
-    return jsonify({
-        "orderItems": order_items,
-        "orderUuid": order.order_uuid,
-        "timestamp": order.timestamp,
-        "status": order.status,
-        "totalPrice": order.total_price,
-        "customer": customer_item(order.customer),
-        "post_status": get_ps(order.post_status) if order.post_status_id is not None else None
-    }), 200
+        return jsonify({
+            "orderItems": order_items,
+            "orderUuid": order.order_uuid,
+            "timestamp": order.timestamp,
+            "status": order.status,
+            "totalPrice": order.total_price,
+            "customer": customer_item(order.customer),
+            "post_status": get_ps(order.post_status) if order.post_status_id is not None else None
+        }), 200
+    else:
+        return jsonify({"message": "Order isn't exist!"})
 
 
 @app.route("/api/public/get_access_token/<order_uuid>")
