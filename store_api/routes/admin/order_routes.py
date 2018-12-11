@@ -18,11 +18,15 @@ def update_post_status_order(order_uuid, post_status_id):
 @app.route("/api/admin/cancel_order/<order_uuid>")
 def cancel_order(order_uuid):
     order = Order.query.filter_by(order_uuid=order_uuid).first()
-    for oi in order.orderitems:
-        p = Product.query.filter_by(id=oi.product_id).first()
-        p.quantity = p.quantity + oi.quantity
-        db.session.delete(oi)
-    db.session.delete(order)
-    db.session.commit()
+    if order and order.orderitems:
+        for oi in order.orderitems:
+            p = Product.query.filter_by(id=oi.product_id).first()
+            p.quantity = p.quantity + oi.quantity
+            db.session.delete(oi)
+        db.session.delete(order)
+        db.session.commit()
 
-    return jsonify({"message": "Prodcts has been updated!"}), 200
+        return jsonify({"message": "Prodcts has been updated!"}), 200
+
+    else:
+        return jsonify({"message": "Order isn't exist!"}), 200
